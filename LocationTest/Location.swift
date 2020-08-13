@@ -15,9 +15,6 @@ class Location: NSObject, CLLocationManagerDelegate  {
     
     
     static func initializeManager() {
-        if Location.locationManager != nil {
-            Location.locationManager = nil
-        }
         Location.locationManager = CLLocationManager()        
         Location.locationManager!.delegate  = Location.shared
         Location.locationManager!.allowsBackgroundLocationUpdates = true
@@ -26,12 +23,6 @@ class Location: NSObject, CLLocationManagerDelegate  {
         Location.locationManager!.desiredAccuracy = kCLLocationAccuracyBest
         
         enableLocationServices()
-        
-//                Location.locationManager!.startUpdatingLocation()
-//        Location.locationManager!.startMonitoringSignificantLocationChanges()
-        //        Location.locationManager!.startMonitoringVisits()
-        
-        
     }
     
     static func enableLocationServices() {
@@ -48,12 +39,11 @@ class Location: NSObject, CLLocationManagerDelegate  {
             Location.locationManager!.requestWhenInUseAuthorization()
         case .authorizedAlways:
             print("???Location auth status is AUTHORIZED ALWAYS")
-            Location.locationManager!.stopUpdatingLocation()
-            Location.locationManager!.startUpdatingLocation()
+            Location.locationManager!.startMonitoringSignificantLocationChanges()
         case .authorizedWhenInUse:
             print("???Location auth status is AUTHORIZED WHEN IN USE")
         @unknown default:
-            print("???Location auth status UNKOWN")
+            print("???Location auth status UNKNOWN")
             fatalError()
             
         }
@@ -62,15 +52,13 @@ class Location: NSObject, CLLocationManagerDelegate  {
     
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-
-            print("??? When in use access")
+        if status == .authorizedWhenInUse {
             Location.locationManager!.requestAlwaysAuthorization()
+        }
         
-//        if (status == .authorizedAlways) {
-//            print("??? Always access \(status == .authorizedAlways)")
-            Location.locationManager!.stopUpdatingLocation()
-            Location.locationManager!.startUpdatingLocation()
-//        }
+        if (status == .authorizedAlways) {
+            Location.locationManager!.startMonitoringSignificantLocationChanges()
+        }
         
         
     }

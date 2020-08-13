@@ -14,8 +14,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
-        // Do any additional setup after loading the view.
         setup()
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
             Location.locationManager?.startMonitoringSignificantLocationChanges()   
         })
