@@ -16,11 +16,6 @@ class ViewController: UIViewController {
         view.backgroundColor = .black
         setup()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
-            Location.locationManager?.startMonitoringSignificantLocationChanges()   
-        })
-            
-        
     }
     
     var label: UILabel = {
@@ -47,22 +42,21 @@ class ViewController: UIViewController {
     
     func setup() {
         view.addSubview(label)
-        view.addSubview(btn)
+
         
         label.anchor(top: view.topAnchor, left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, paddingTop: 10, paddingLeft: 10, paddingBottom: 10, paddingRight: 10, width: view.frame.width, height: view.frame.height)
+        label.text = String(UserDefaults.standard.integer(forKey: Location.counter))
         
-        label.text = String(UserDefaults.standard.integer(forKey: "locationUpdateCount"))
         
-        btn.anchor(top: nil, left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, paddingTop: 10, paddingLeft: 10, paddingBottom: 10, paddingRight: 10, width: view.frame.width/5, height: view.frame.height/5)
-        btn.layer.cornerRadius = 50
-        
-
-        Location.initializeManager()
+        if Location.locationManager == nil {
+            Location.initializeManager()
+        }
+        Location.VC = self
         
     }
     
     @objc func refresh() {
-        label.text = String(UserDefaults.standard.integer(forKey: "locationUpdateCount"))
+        label.text = String(UserDefaults.standard.integer(forKey: Location.counter))
     }
     
 
