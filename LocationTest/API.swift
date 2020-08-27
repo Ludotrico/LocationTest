@@ -26,7 +26,7 @@ class API {
         
         
         DispatchQueue.global(qos: .userInitiated).async {
-            AF.request("https://rage-278704.uc.r.appspot.com/temp", method: .post, parameters: paramaters, encoding: JSONEncoding.default)
+            AF.request("https://[myserver].com/temp", method: .post, parameters: paramaters, encoding: JSONEncoding.default)
                 .response { response in
                     if response.error == nil {
                         completion(.success(1))
