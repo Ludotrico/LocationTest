@@ -12,7 +12,10 @@ import Alamofire
 import CoreMotion
 import UserNotifications
 
-class Location: NSObject, CLLocationManagerDelegate {
+
+class Location: NSObject {
+    
+    //MARK: Variables
     static let shared = Location()
     static var locationManager: CLLocationManager?
     static var counter = "count"
@@ -32,6 +35,9 @@ class Location: NSObject, CLLocationManagerDelegate {
         
         enableLocationServices()
     }
+    
+    
+    //MARK: Helper Functions
     
     static func enableLocationServices() {
         print("???Enable location services)")
@@ -55,9 +61,6 @@ class Location: NSObject, CLLocationManagerDelegate {
             } else if significantLocationUpdates {
                 Location.locationManager!.startMonitoringSignificantLocationChanges()
             }
-            
-            
-            Location.locationManager!.startUpdatingLocation()
         case .authorizedWhenInUse:
             print("???Location auth status is AUTHORIZED WHEN IN USE")
         @unknown default:
@@ -66,16 +69,6 @@ class Location: NSObject, CLLocationManagerDelegate {
             
         }
     }
-    
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        if status == .authorizedWhenInUse {
-            Location.locationManager!.requestAlwaysAuthorization()
-        }
-        
-    }
-    
-    
-    
     
     
     static func createRegion() {
@@ -90,12 +83,6 @@ class Location: NSObject, CLLocationManagerDelegate {
             Location.locationManager?.stopMonitoring(for: region)
         }
     }
-    
-    
-    
-    
-    
-    
     
     
     
@@ -123,11 +110,25 @@ class Location: NSObject, CLLocationManagerDelegate {
     }
     
     
+    
+    
+}
+
+
+//MARK: CLLocationManagerDelegate
+extension Location: CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedWhenInUse {
+            Location.locationManager!.requestAlwaysAuthorization()
+        }
+        
+    }
+    
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         let circularRegion = region as! CLCircularRegion
         print("@ @ @ DID EXIT REGION: \(circularRegion.center)")
         
-        manager.stopMonitoring(for: region) 
+        manager.stopMonitoring(for: region)
         Location.createRegion()
         UserDefaults.standard.set(UserDefaults.standard.integer(forKey: Location.counter)+1, forKey: Location.counter)
         
@@ -135,8 +136,6 @@ class Location: NSObject, CLLocationManagerDelegate {
         fireNotification(notificationText: "didExitRegion", fromRegion: true)
         
         Location.VC.refresh()
-        
-        
         
         
         
@@ -151,9 +150,5 @@ class Location: NSObject, CLLocationManagerDelegate {
     }
     
 }
-
-
-
-
 
 

@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         center.getNotificationSettings { settings in
             if settings.authorizationStatus == .notDetermined {
                 UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge], completionHandler: { _, _ in
-                
+                    
                 })
             }
         }
