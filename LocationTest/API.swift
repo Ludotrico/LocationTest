@@ -23,11 +23,13 @@ class API {
         paramaters["exitedRegion"] = fromExitRegion
         if let radius = radius {
             paramaters["radius"] = radius
+        } else {
+            paramaters["radius"] = nil
         }
         
         
         DispatchQueue.global(qos: .userInitiated).async {
-            AF.request("https://[myserver].com/temp", method: .post, parameters: paramaters, encoding: JSONEncoding.default)
+            AF.request("https://[myserver]/temp", method: .post, parameters: paramaters, encoding: JSONEncoding.default)
                 .response { response in
                     if response.error == nil {
                         completion(.success(1))
