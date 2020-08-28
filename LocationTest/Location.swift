@@ -53,15 +53,6 @@ class Location: NSObject {
             Location.locationManager!.requestWhenInUseAuthorization()
         case .authorizedAlways:
             print("???Location auth status is AUTHORIZED ALWAYS")
-//            API.pingServer(date: Location.locationManager!.location!.timestamp, coordinates: Location.locationManager!.location!.coordinate, fromExitRegion: false) { result in
-//                switch result
-//                {
-//                case .success(_):
-//                    print("success")
-//                case .failure(let error):
-//                    print("DEBUG: \(error)")
-//                }
-//            }
             deployStrategy()
         case .authorizedWhenInUse:
             print("???Location auth status is AUTHORIZED WHEN IN USE")
