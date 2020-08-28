@@ -11,7 +11,7 @@ import CoreLocation
 import Alamofire
 
 class API {
-    static func pingServer(date: Date, coordinates: CLLocationCoordinate2D, completion: @escaping(Result<Int, Error>) -> ()) {
+    static func pingServer(date: Date, coordinates: CLLocationCoordinate2D, fromExitRegion: Bool, radius: Int?=nil, completion: @escaping(Result<Int, Error>) -> ()) {
         var paramaters: [String: Any] = [:]
         
         let format = DateFormatter()
@@ -20,9 +20,10 @@ class API {
         paramaters["date"] = format.string(from: date)
         paramaters["latitude"] = coordinates.latitude
         paramaters["longitude"] = coordinates.longitude
-        paramaters["attended"] = false  
-        
-        
+        paramaters["exitedRegion"] = fromExitRegion
+        if let radius = radius {
+            paramaters["radius"] = radius
+        }
         
         
         DispatchQueue.global(qos: .userInitiated).async {

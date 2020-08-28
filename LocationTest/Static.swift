@@ -10,6 +10,7 @@ import Foundation
 
 
 internal let regionHoppingWorkaround = true
+internal let multipleRegionHoppingWorkaround = false
 internal let significantLocationUpdates = false
 
 internal let useAllStrategies = false

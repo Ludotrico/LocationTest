@@ -18,7 +18,7 @@ class Location: NSObject {
     //MARK: Variables
     static let shared = Location()
     static var locationManager: CLLocationManager?
-    static var counter = "count"
+    static var counter = "countt"
     static var motionManager: CMMotionActivityManager?
     static var shouldReportLocationChange = true
     static let regionRadius: CLLocationDistance = 100
@@ -53,14 +53,16 @@ class Location: NSObject {
             Location.locationManager!.requestWhenInUseAuthorization()
         case .authorizedAlways:
             print("???Location auth status is AUTHORIZED ALWAYS")
-            if useAllStrategies {
-                createRegion()
-                Location.locationManager!.startMonitoringSignificantLocationChanges()
-            } else if regionHoppingWorkaround {
-                createRegion()
-            } else if significantLocationUpdates {
-                Location.locationManager!.startMonitoringSignificantLocationChanges()
-            }
+//            API.pingServer(date: Location.locationManager!.location!.timestamp, coordinates: Location.locationManager!.location!.coordinate, fromExitRegion: false) { result in
+//                switch result
+//                {
+//                case .success(_):
+//                    print("success")
+//                case .failure(let error):
+//                    print("DEBUG: \(error)")
+//                }
+//            }
+            deployStrategy()
         case .authorizedWhenInUse:
             print("???Location auth status is AUTHORIZED WHEN IN USE")
         @unknown default:
@@ -70,12 +72,39 @@ class Location: NSObject {
         }
     }
     
+    static func deployStrategy() {
+        if useAllStrategies {
+            createMultipleRegions()
+            Location.locationManager!.startMonitoringSignificantLocationChanges()
+        } else if regionHoppingWorkaround {
+            createRegion()
+        } else if multipleRegionHoppingWorkaround {
+            createMultipleRegions()
+        } else if significantLocationUpdates {
+            Location.locationManager!.startMonitoringSignificantLocationChanges()
+        }
+    }
+    
     
     static func createRegion() {
+        Location.stopMonitoringRegions()
+        
         let region = CLCircularRegion(center: Location.locationManager!.location!.coordinate, radius: Location.regionRadius, identifier: "lastLocation")
         region.notifyOnExit = true
         region.notifyOnEntry = false
         Location.locationManager!.startMonitoring(for: region)
+    }
+    
+    static func createMultipleRegions() {
+        Location.stopMonitoringRegions()
+        
+        //Can only monitor 20 regions max
+        for radius in stride(from: 50, through: 1000, by: 50) {
+            let region = CLCircularRegion(center: Location.locationManager!.location!.coordinate, radius: CLLocationDistance(radius), identifier: "\(radius)")
+            region.notifyOnExit = true
+            region.notifyOnEntry = false
+            Location.locationManager!.startMonitoring(for: region)
+        }
     }
     
     static func stopMonitoringRegions() {
@@ -86,13 +115,15 @@ class Location: NSObject {
     
     
     
-    func fireNotification(notificationText: String, fromRegion: Bool) {
+    func fireNotification(fromRegion: Bool, radius: Int?=nil) {
         let notificationCenter = UNUserNotificationCenter.current()
         
         notificationCenter.getNotificationSettings { (settings) in
             let content = UNMutableNotificationContent()
             content.title = fromRegion ? "Exited Region" : "didUpdateLocation"
-            //                content.body = notificationText
+            if fromRegion {
+                content.body = "\(radius!) meter region"
+            }
             content.sound =  .default
             content.badge = NSNumber(value: UserDefaults.standard.integer(forKey: Location.counter))
             content.threadIdentifier = fromRegion ? "fromRegionExit" : "notFromRegionExit"
@@ -120,20 +151,27 @@ extension Location: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse {
             Location.locationManager!.requestAlwaysAuthorization()
+        } else if status == .authorizedAlways {
+            Location.deployStrategy()
         }
         
     }
     
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         let circularRegion = region as! CLCircularRegion
-        print("@ @ @ DID EXIT REGION: \(circularRegion.center)")
+   
+        if multipleRegionHoppingWorkaround || useAllStrategies {
+            Location.createMultipleRegions()
+        } else if regionHoppingWorkaround {
+            Location.createRegion()
+        }
         
-        manager.stopMonitoring(for: region)
-        Location.createRegion()
+        
         UserDefaults.standard.set(UserDefaults.standard.integer(forKey: Location.counter)+1, forKey: Location.counter)
         
-        API.pingServer(date: manager.location!.timestamp, coordinates: manager.location!.coordinate) { _ in }
-        fireNotification(notificationText: "didExitRegion", fromRegion: true)
+        API.pingServer(date: manager.location!.timestamp, coordinates: manager.location!.coordinate, fromExitRegion: true, radius: Int(circularRegion.radius)) { _ in }
+        
+        fireNotification(fromRegion: true, radius: Int(circularRegion.radius))
         
         Location.VC.refresh()
         
@@ -143,8 +181,8 @@ extension Location: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         UserDefaults.standard.set(UserDefaults.standard.integer(forKey: Location.counter)+1, forKey: Location.counter)
-        API.pingServer(date: manager.location!.timestamp, coordinates: manager.location!.coordinate) { _ in }
-        fireNotification(notificationText: "didUpdateLocation", fromRegion: false)
+        API.pingServer(date: manager.location!.timestamp, coordinates: manager.location!.coordinate, fromExitRegion: false) { _ in }
+        fireNotification(fromRegion: false)
         
         Location.VC.refresh()
     }
