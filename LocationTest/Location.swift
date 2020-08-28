@@ -18,7 +18,7 @@ class Location: NSObject {
     //MARK: Variables
     static let shared = Location()
     static var locationManager: CLLocationManager?
-    static var counter = "countt"
+    static var counter = "count"
     static var motionManager: CMMotionActivityManager?
     static var shouldReportLocationChange = true
     static let regionRadius: CLLocationDistance = 100
